@@ -1,0 +1,329 @@
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+import User from "../models/user/userModel.js";
+import VerificationToken from "../models/user/verificationModel.js";
+import { sendError } from "../utils/responseHandling/errorHandling.js";
+import { sendSuccess } from "../utils/responseHandling/successHandling.js";
+import isStrongPassword from "../utils/passwordValidation.js";
+import isValidEmail from "../utils/emailValidation.js";
+import generateVerificationCode from "../utils/generateVerificationCode.js";
+import { colgroup } from "framer-motion/m";
+
+export const registerUser = async (req, res) => {
+  const { name, email, password } = req.body;
+  // if any feild is empty then return
+
+  if (!name || !email || !password) {
+    return sendError(res, 400, "Name, email and password are required");
+  }
+  if (!isValidEmail(email)) {
+    return sendError(res, 400, "Invalid email format");
+  }
+
+  if (!isStrongPassword(password)) {
+    return sendError(res, 400, "Inadequate password strength");
+  }
+  try {
+    // check whether the user exists with this email
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return sendError(res, 409, "User already exists with this email");
+    }
+
+    const saltRounds = 10;
+
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    const user = {
+      name,
+      email,
+      passwordHash,
+      // other fields are default
+    };
+
+    const userData = await User.create(user);
+    const responseUser = {
+      id: userData._id,
+      name: userData.name,
+      email: userData.email,
+      role: userData.role,
+      isEmailVerified: userData.isEmailVerified,
+    };
+    return sendSuccess(res, 201, responseUser, "Register Successfull");
+  } catch (error) {
+    console.log(error);
+    return sendError(res, 500, "Some error occured");
+  }
+};
+
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return sendError(res, 400, "Email and password are required");
+  }
+  try {
+    // check whether the user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return sendError(res, 401, "User doesn't exists with this email");
+    }
+    // The user exist, check password
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return sendError(res, 401, "Incorrect password");
+    }
+    const token = jwt.sign(
+      {
+        sub: user._id.toString(),
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "15m",
+      }
+    );
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      maxAge: 15 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+    return sendSuccess(res, 200, null, "login SuccessFul");
+  } catch (error) {
+    return sendError(res, 500, "Some error occured");
+  }
+};
+
+export const logoutUser = async (req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+
+  return sendSuccess(res, 200, null, "Logout successful");
+};
+
+export const sendVerification = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId).select("email isEmailVerified");
+    if (!user) {
+      return sendError(res, 401, "User no longer exists");
+    }
+    if (user.isEmailVerified) {
+      return sendError(res, 400, "Email is already verified");
+    }
+    const existingVerificationToken = await VerificationToken.findOne({
+      userId,
+      purpose: "EMAIL_VERIFICATION",
+    });
+    const code = generateVerificationCode();
+    const codeHash = await bcrypt.hash(code, 10);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    if (existingVerificationToken) {
+      existingVerificationToken.codeHash = codeHash;
+      existingVerificationToken.expiresAt = expiresAt;
+      await existingVerificationToken.save();
+    } else {
+      await VerificationToken.create({
+        userId,
+        purpose: "EMAIL_VERIFICATION",
+        codeHash,
+        expiresAt,
+      });
+    }
+    // send code to user email
+    // for now let's console
+    console.log(code);
+    return sendSuccess(res, 201, null, "Verification code sent successfully");
+  } catch (error) {
+    return sendError(res, 500, `Internal server error ${error}`);
+  }
+};
+
+export const emailVerification = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { code } = req.body;
+    if (!userId) {
+      return sendError(res, 401, "Unauthenticated user");
+    }
+    if (!code) {
+      return sendError(res, 401, "Enter verificatin code");
+    }
+    const verificationToken = await VerificationToken.findOne({
+      userId,
+      purpose: "EMAIL_VERIFICATION",
+    });
+    if (!verificationToken) {
+  return sendError(
+    res,
+    400,
+    "No active verification code found"
+  );
+}
+    if (verificationToken.expiresAt <= new Date()) {
+      return sendError(res, 400, "Verification code has expired");
+    }
+    const isCodeMatched = await bcrypt.compare(
+      code,
+      verificationToken.codeHash
+    );
+    if (!isCodeMatched) {
+      return sendError(res, 401, "Incorrect code");
+    }
+    // I also need to update the verifiToken and user profile
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          isEmailVerified: true,
+        },
+      }
+    );
+    verificationToken.expiresAt = new Date();
+    await verificationToken.save();
+    return sendSuccess(res, 200, null, "Email verified");
+  } catch (error) {
+    return sendError(res, 500, `Internal server error ${error}`);
+  }
+};
+
+export const sendPasswordVerification = async(req, res)=>{
+  try {
+    const {email} = req.body
+    const user = await User.findOne({email})
+    if (!user) {
+      return sendError(res, 401, "User no longer exists");
+    }
+    const userId = user._id;
+    const existingVerificationToken = await VerificationToken.findOne({
+      userId,
+      purpose: "PASSWORD_RESET",
+    });
+    const code = generateVerificationCode();
+    const codeHash = await bcrypt.hash(code, 10);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    if (existingVerificationToken) {
+      existingVerificationToken.codeHash = codeHash;
+      existingVerificationToken.expiresAt = expiresAt;
+      await existingVerificationToken.save();
+    } else {
+      await VerificationToken.create({
+        userId,
+        purpose: "PASSWORD_RESET",
+        codeHash,
+        expiresAt,
+      });
+    }
+    // send code to user email
+    // for now let's console
+    console.log(code);
+    return sendSuccess(res, 201, null, "Verification code sent successfully");
+  } catch (error) {
+    return sendError(res, 500, `Internal server error ${error}`);
+  }
+}
+
+export const userPasswordUpdate = async (req, res) => {
+  try {
+    const { email, code, password } = req.body;
+
+    if (!email || !code || !password) {
+      return sendError(
+        res,
+        400,
+        "Email, code and password are required"
+      );
+    }
+
+    if (!isStrongPassword(password)) {
+      return sendError(
+        res,
+        400,
+        "Inadequate password strength"
+      );
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return sendError(
+        res,
+        400,
+        "No user exists with this email"
+      );
+    }
+
+    const userId = user._id;
+
+    const verificationToken = await VerificationToken.findOne({
+      userId,
+      purpose: "PASSWORD_RESET",
+    });
+
+    if (!verificationToken) {
+      return sendError(
+        res,
+        400,
+        "No active password reset code found"
+      );
+    }
+
+    if (verificationToken.expiresAt <= new Date()) {
+      return sendError(
+        res,
+        400,
+        "Verification code has expired"
+      );
+    }
+
+    const isCodeMatched = await bcrypt.compare(
+      code,
+      verificationToken.codeHash
+    );
+
+    if (!isCodeMatched) {
+      return sendError(
+        res,
+        400,
+        "Incorrect verification code"
+      );
+    }
+
+    // check password strength
+    
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          passwordHash,
+        },
+      }
+    );
+
+    // Invalidate the password-reset token
+    verificationToken.expiresAt = new Date();
+    await verificationToken.save();
+
+    return sendSuccess(
+      res,
+      200,
+      null,
+      "Password updated successfully"
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    return sendError(
+      res,
+      500,
+      "Internal server error"
+    );
+  }
+};
