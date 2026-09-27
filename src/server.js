@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser';
 import authRouter from '../src/routes/authRoutes.js'
+import customerRouter from '../src/routes/customerRoutes.js'
 
 
 import connectDB from './config/db.js';
@@ -17,6 +18,7 @@ app.use(cookieParser())
 // routes
 
 app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/customer', customerRouter)
 
 
 

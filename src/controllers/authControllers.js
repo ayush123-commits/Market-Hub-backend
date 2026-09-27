@@ -1,15 +1,14 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-import User from "../models/user/userModel.js";
-import VerificationToken from "../models/user/verificationModel.js";
+import User from "../models/auth/userModel.js";
+import VerificationToken from "../models/auth/verificationModel.js";
 import { sendError } from "../utils/responseHandling/errorHandling.js";
 import { sendSuccess } from "../utils/responseHandling/successHandling.js";
 import isStrongPassword from "../utils/passwordValidation.js";
 import isValidEmail from "../utils/emailValidation.js";
 import generateVerificationCode from "../utils/generateVerificationCode.js";
 import { sendResigterEmail, sendVerificationCodeEmail, sendPasswordResetCodeEmail, sendAccountVerifiedEmail } from "../services/emails/emailServices.js";
-import user from "../models/user/userModel.js";
 
 
 export const registerUser = async (req, res) => {
