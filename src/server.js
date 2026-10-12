@@ -3,6 +3,8 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser';
 import authRouter from '../src/routes/authRoutes.js'
 import customerRouter from '../src/routes/customerRoutes.js'
+import accountRouter from '../src/routes/accountRoutes.js'
+import sellerRoutes from '../src/routes/sellerRoutes.js'
 
 
 import connectDB from './config/db.js';
@@ -19,6 +21,8 @@ app.use(cookieParser())
 
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/customer', customerRouter)
+app.use('/api/v1/account', accountRouter)
+app.use('/api/v1/seller', sellerRoutes)
 
 
 
