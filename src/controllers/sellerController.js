@@ -176,15 +176,14 @@ export const updateSellerProfile = async (req, res) => {
       );
     }
 
-    const sellerProfile =
-      await SellerProfile.findOneAndUpdate(
-        { user: req.userId },
-        { $set: updates },
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
+    const sellerProfile = await SellerProfile.findOneAndUpdate(
+  { user: req.userId },
+  { $set: updates },
+  {
+    returnDocument: "after",
+    runValidators: true,
+  }
+);
 
     if (!sellerProfile) {
       return sendError(

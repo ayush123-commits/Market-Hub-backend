@@ -18,18 +18,19 @@ router.post(
 );
 
 // Get your own seller profile
-// router.get(
-//   "/profile",
-//   authenticate,
-//   getMySellerProfile
-// );
+router.get(
+  "/profile",
+  authMiddleware,
+  roleAuthorise("SELLER"),
+  getMySellerProfile
+);
 
 // // Update your seller profile while in seller mode
-// router.patch(
-//   "/profile",
-//   authenticate,
-//   authorize("SELLER"),
-//   updateSellerProfile
-// );
+router.patch(
+  "/profile",
+  authMiddleware,
+  roleAuthorise("SELLER"),
+  updateSellerProfile
+);
 
 export default router;
