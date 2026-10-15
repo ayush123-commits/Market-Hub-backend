@@ -1,8 +1,7 @@
 import express from "express";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import roleAuthorise from "../middlewares/authoriseMiddleware.js";
-import { switchToSeller } from "../controllers/accountController";
-import { switchToCustomer } from "../controllers/accountController";
+import { switchToSeller, switchToCustomer } from "../controllers/accountController.js";
 
 const router = express.Router();
 

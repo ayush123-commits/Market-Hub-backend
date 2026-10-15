@@ -6,6 +6,7 @@ import {
   getMySellerProfile,
   updateSellerProfile,
 } from "../controllers/sellerController.js";
+import { createWarehouse, deleteWarehouse, getWarehouseById, getWarehouses, updateWarehouse } from "../controllers/wareHouseController.js";
 
 const router = express.Router();
 
@@ -32,5 +33,18 @@ router.patch(
   roleAuthorise("SELLER"),
   updateSellerProfile
 );
+
+router.post('/warehouse',authMiddleware,
+  roleAuthorise("SELLER"), createWarehouse)
+router.get('/warehouses',authMiddleware,
+  roleAuthorise("SELLER"), getWarehouses)
+router.get('/warehouse/:id',authMiddleware,
+  roleAuthorise("SELLER"), getWarehouseById)
+router.patch('/warehouse/:id',authMiddleware,
+  roleAuthorise("SELLER"), updateWarehouse)
+router.delete('/warehouse/:id',authMiddleware,
+  roleAuthorise("SELLER"), deleteWarehouse)
+
+
 
 export default router;

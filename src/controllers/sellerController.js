@@ -217,3 +217,4 @@ export const updateSellerProfile = async (req, res) => {
     );
   }
 };
+
