@@ -1,6 +1,6 @@
 import express from "express";
-import authMiddleware from "../middlewares/authMiddleware.js";
-import roleAuthorise from "../middlewares/authoriseMiddleware.js";
+import authMiddleware from "../../middlewares/authMiddleware.js";
+import roleAuthorise from "../../middlewares/authoriseMiddleware.js";
 import {
   createCustomerAddress,
   createCustomerProfile,
@@ -11,7 +11,7 @@ import {
   setDefaultCustomerAddress,
   updateCustomerAddress,
   updateCustomerProfile,
-} from "../controllers/customerController.js";
+} from "../../controllers/customer/customerController.js";
 
 const router = express.Router();
 

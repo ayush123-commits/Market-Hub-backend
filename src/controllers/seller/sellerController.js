@@ -1,12 +1,12 @@
-import SellerProfile from "../models/user&roles/sellerModel.js";
+import SellerProfile from "../../models/user&roles/sellerModel.js";
 
 import {
   sendError,
-} from "../utils/responseHandling/errorHandling.js";
+} from "../../utils/responseHandling/errorHandling.js";
 
 import {
   sendSuccess,
-} from "../utils/responseHandling/successHandling.js";
+} from "../../utils/responseHandling/successHandling.js";
 
 
 // CREATE SELLER PROFILE

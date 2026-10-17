@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import User from "../models/auth/userModel.js";
-import CustomerAddress from "../models/Adress/customerAddressModel.js";
-import CustomerProfile from "../models/user&roles/customermodel.js";
+import User from "../../models/auth/userModel.js";
+import CustomerAddress from "../../models/Adress/customerAddressModel.js";
+import CustomerProfile from "../../models/user&roles/customermodel.js";
 
-import { sendError } from "../utils/responseHandling/errorHandling.js";
-import { sendSuccess } from "../utils/responseHandling/successHandling.js";
+import { sendError } from "../../utils/responseHandling/errorHandling.js";
+import { sendSuccess } from "../../utils/responseHandling/successHandling.js";
 
 export const getMyCustomerProfile = async (req, res) => {
   try {

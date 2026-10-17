@@ -1,9 +1,9 @@
 // Method	Endpoint	Purpose
-import SellerProfile from "../models/user&roles/sellerModel.js";
-import Warehouse from "../models/Adress/warehouseModel.js"
+import SellerProfile from "../../models/user&roles/sellerModel.js";
+import Warehouse from "../../models/Adress/warehouseModel.js"
 
-import { sendError } from "../utils/responseHandling/errorHandling.js";
-import { sendSuccess } from "../utils/responseHandling/successHandling.js";
+import { sendError } from "../../utils/responseHandling/errorHandling.js";
+import { sendSuccess } from "../../utils/responseHandling/successHandling.js";
 
 export const createWarehouse = async (req, res) => {
   try {

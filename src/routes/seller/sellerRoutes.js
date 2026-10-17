@@ -1,12 +1,14 @@
 import express from "express";
-import authMiddleware from "../middlewares/authMiddleware.js";
-import roleAuthorise from "../middlewares/authoriseMiddleware.js";
+import authMiddleware from "../../middlewares/authMiddleware.js";
+import roleAuthorise from "../../middlewares/authoriseMiddleware.js";
 import {
   createSellerProfile,
   getMySellerProfile,
   updateSellerProfile,
-} from "../controllers/sellerController.js";
-import { createWarehouse, deleteWarehouse, getWarehouseById, getWarehouses, updateWarehouse } from "../controllers/wareHouseController.js";
+} from "../../controllers/seller/sellerController.js";
+import { createWarehouse, deleteWarehouse, getWarehouseById, getWarehouses, updateWarehouse } from "../../controllers/seller/wareHouseController.js";
+
+import productRoutes from './seller.productRoutes.js'
 
 const router = express.Router();
 
@@ -34,6 +36,7 @@ router.patch(
   updateSellerProfile
 );
 
+// Fix these in the next step. Create a file, fix paths and use an endpoint 
 router.post('/warehouse',authMiddleware,
   roleAuthorise("SELLER"), createWarehouse)
 router.get('/warehouses',authMiddleware,
@@ -45,6 +48,8 @@ router.patch('/warehouse/:id',authMiddleware,
 router.delete('/warehouse/:id',authMiddleware,
   roleAuthorise("SELLER"), deleteWarehouse)
 
+  // Product endpoints
+router.use("/products", productRoutes);
 
 
 export default router;
