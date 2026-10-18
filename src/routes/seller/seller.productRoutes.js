@@ -2,6 +2,7 @@ import express from 'express'
 import authMiddleware from '../../middlewares/authMiddleware.js'
 import roleAuthorise from '../../middlewares/authoriseMiddleware.js';
 import { createProductDraft } from '../../controllers/seller/seller.productController.js';
+import { uploadProductPhotos } from '../../middlewares/multer/productUpload.js';
 const router = express.Router();
 
 // POST	/api/seller/products	Create a product draft
@@ -10,6 +11,7 @@ router.post(
   "/",
   authMiddleware,
   roleAuthorise("SELLER"),
+  uploadProductPhotos,
   createProductDraft
 );
 
