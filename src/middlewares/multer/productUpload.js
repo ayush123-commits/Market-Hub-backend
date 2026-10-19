@@ -1,17 +1,4 @@
 import multer from "multer";
-import path from "node:path";
-import { homedir } from "node:os";
-import { mkdirSync } from "node:fs";
-import { randomUUID } from "node:crypto";
-
-// Save uploaded files to a folder on your Desktop.
-const uploadDir = path.join(
-  homedir(),
-  "Desktop",
-  "product-photos"
-);
-
-mkdirSync(uploadDir, { recursive: true });
 
 const allowedMimeTypes = new Set([
   "image/jpeg",
@@ -33,26 +20,7 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-// This is the important change.
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-
-  filename: (req, file, cb) => {
-    const extensionByMime = {
-      "image/jpeg": ".jpg",
-      "image/png": ".png",
-      "image/webp": ".webp",
-      "image/avif": ".avif",
-    };
-
-    const extension =
-      extensionByMime[file.mimetype] || "";
-
-    cb(null, `${randomUUID()}${extension}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const productImageUpload = multer({
   storage,
