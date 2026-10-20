@@ -34,5 +34,5 @@ const productImageUpload = multer({
   },
 });
 
-export const uploadProductPhotos =
+export const uploadProductImages =
   productImageUpload.array("photos", 10);

@@ -8,6 +8,11 @@ const productImageSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    public_id: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
     altText: {
       type: String,

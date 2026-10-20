@@ -7,10 +7,6 @@ const requiredEnvVars = [
   "CLOUDINARY_API_SECRET",
 ];
 
-requiredEnvVars.forEach((key) => {
-  console.log(`${key}:`, process.env[key] ? "Loaded" : "Missing");
-});
-
 const missing = requiredEnvVars.filter((key) => !process.env[key]?.trim());
 
 if (missing.length > 0) {
