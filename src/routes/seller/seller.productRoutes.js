@@ -1,7 +1,7 @@
 import express from 'express'
 import authMiddleware from '../../middlewares/authMiddleware.js'
 import roleAuthorise from '../../middlewares/authoriseMiddleware.js';
-import { createProductDraft } from '../../controllers/seller/seller.productController.js';
+import { createProductDraft, getSellerProducts } from '../../controllers/seller/seller.productController.js';
 import { uploadProductImages } from '../../middlewares/multer/productUpload.js';
 const router = express.Router();
 
@@ -16,7 +16,18 @@ router.post(
 );
 
 // GET	/api/seller/products	Retrieve the seller's products
+
+router.get(
+  '/',
+  authMiddleware,
+  roleAuthorise("SELLER"),
+  getSellerProducts
+)
+
 // GET	/api/seller/products/:productId	Retrieve one product and its SKUs
+
+
+
 // PATCH	/api/seller/products/:productId	Update an eligible draft
 // POST	/api/seller/products/:productId/skus	Add a SKU and proposed price
 // PATCH	/api/seller/products/:productId/skus/:skuId	Update an eligible SKU

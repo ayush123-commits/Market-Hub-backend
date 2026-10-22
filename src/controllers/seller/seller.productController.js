@@ -160,3 +160,42 @@ export const createProductDraft = async (req, res, next) => {
     return next(error);
   }
 };
+
+
+export const getSellerProducts = async (req, res, next) => {
+  try {
+    if (!req.userId) {
+      return sendError(res, 401, "Authentication is required.");
+    }
+
+    const seller = await SellerProfile.findOne({
+      user: req.userId,
+    })
+      .select("_id")
+      .lean();
+
+    if (!seller) {
+      return sendError(
+        res,
+        403,
+        "A seller profile is required to view products."
+      );
+    }
+
+    const products = await Product.find({
+      seller: seller._id,
+    }).sort({ updatedAt: -1 });
+
+    return sendSuccess(
+      res,
+      200,
+      { products },
+      "Seller products retrieved successfully."
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+
